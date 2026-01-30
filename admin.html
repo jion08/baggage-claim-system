@@ -1,0 +1,21 @@
+<script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+<script>
+  // Firebase 연결 설정 (본인의 설정값 입력)
+  const firebaseConfig = { ... }; 
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  function sendData() {
+    const flightData = {
+      status_ko: document.getElementById('input-status-ko').value,
+      status_en: document.getElementById('input-status-en').value,
+      flight_no: document.getElementById('input-flight').value,
+      youtube_id: document.getElementById('input-youtube').value,
+      marquee: document.getElementById('input-marquee').value
+    };
+    
+    // DB의 'display' 경로에 저장
+    set(ref(db, 'display/'), flightData);
+    alert("전광판으로 전송 완료!");
+  }
+</script>
