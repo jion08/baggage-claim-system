@@ -1,21 +1,97 @@
-<script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
-<script>
-  // Firebase 연결 설정 (본인의 설정값 입력)
-  const firebaseConfig = { ... }; 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Baggage System Admin</title>
+    <style>
+        body { font-family: sans-serif; background: #ececec; padding: 40px; }
+        .admin-container { 
+            max-width: 600px; margin: auto; background: white; 
+            padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; 
+            border-radius: 6px; box-sizing: border-box; font-size: 16px;
+        }
+        button { 
+            width: 100%; padding: 15px; background: #007bff; color: white; 
+            border: none; border-radius: 6px; font-size: 18px; cursor: pointer; 
+            font-weight: bold; transition: background 0.3s;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
 
-  function sendData() {
-    const flightData = {
-      status_ko: document.getElementById('input-status-ko').value,
-      status_en: document.getElementById('input-status-en').value,
-      flight_no: document.getElementById('input-flight').value,
-      youtube_id: document.getElementById('input-youtube').value,
-      marquee: document.getElementById('input-marquee').value
+<div class="admin-container">
+    <h2>수하물 전광판 원격 제어</h2>
+    <div class="form-group">
+        <label>출발지 (Origin)</label>
+        <input type="text" id="origin" value="JEJU">
+    </div>
+    <div class="form-group">
+        <label>편명 (Flight No)</label>
+        <input type="text" id="flight_no" value="KE 1250">
+    </div>
+    <div class="form-group">
+        <label>벨트 번호 (Belt No)</label>
+        <input type="text" id="belt_no" value="1">
+    </div>
+    <div class="form-group">
+        <label>상태 - 한국어 (Status KO)</label>
+        <input type="text" id="status_ko" value="수하물 처리중">
+    </div>
+    <div class="form-group">
+        <label>상태 - 영어 (Status EN)</label>
+        <input type="text" id="status_en" value="Now Loading">
+    </div>
+    <div class="form-group">
+        <label>유튜브 영상 ID (CCTV)</label>
+        <input type="text" id="youtube_id" placeholder="예: dQw4w9WgXcQ">
+    </div>
+    <div class="form-group">
+        <label>하단 흐르는 자막 (Announcement)</label>
+        <input type="text" id="marquee" value="즐거운 여행 되십시오.">
+    </div>
+    <button id="update-btn">화면으로 즉시 전송</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // [중요] display.html과 동일한 Firebase 설정값을 넣으세요
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
     };
-    
-    // DB의 'display' 경로에 저장
-    set(ref(db, 'display/'), flightData);
-    alert("전광판으로 전송 완료!");
-  }
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    document.getElementById('update-btn').onclick = function() {
+        const data = {
+            origin: document.getElementById('origin').value,
+            flight_no: document.getElementById('flight_no').value,
+            belt_no: document.getElementById('belt_no').value,
+            status_ko: document.getElementById('status_ko').value,
+            status_en: document.getElementById('status_en').value,
+            youtube_id: document.getElementById('youtube_id').value,
+            marquee: document.getElementById('marquee').value
+        };
+
+        set(ref(db, 'baggage_system'), data)
+            .then(() => alert("전광판이 실시간으로 업데이트되었습니다!"))
+            .catch((error) => alert("에러 발생: " + error.message));
+    };
 </script>
+</body>
+</html>
