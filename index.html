@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Baggage Claim System</title>
+    <title>Smart Baggage Claim System - Display</title>
     <style>
         body { margin: 0; background-color: #121212; color: white; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; }
         
-        /* 전체 컨테이너 */
         #display-board {
             width: 100vw; height: 100vh;
             display: flex; flex-direction: column;
             border: 10px solid #222; box-sizing: border-box;
         }
 
-        /* 상단 헤더: 로고 및 벨트 번호 */
         .header {
             background-color: black; height: 15%;
             display: flex; justify-content: space-between; align-items: center;
@@ -23,30 +21,26 @@
         .header-left { display: flex; align-items: center; gap: 20px; }
         .belt-tag { font-size: 100px; color: #FFD700; font-weight: 900; }
 
-        /* 메인 영역 (파란 배경) */
         .main-info {
             background: linear-gradient(to bottom, #4a628a, #2e3e5e);
             height: 55%; display: flex; padding: 40px; justify-content: space-between;
         }
-        .status-box { display: flex; flex-direction: column; justify-content: center; }
-        #status-text { font-size: 75px; font-weight: bold; margin-bottom: 10px; transition: opacity 0.5s; }
+        .status-box { display: flex; flex-direction: column; justify-content: center; width: 50%; }
+        #status-text { font-size: 75px; font-weight: bold; margin-bottom: 10px; transition: opacity 0.5s; min-height: 110px; }
         .flight-details { font-size: 45px; display: flex; align-items: center; gap: 25px; }
         .airline-logo { background: white; color: #003399; padding: 5px 15px; font-weight: bold; border-radius: 4px; }
 
-        /* CCTV 영상 영역 */
         .cctv-container {
             width: 45%; height: 100%; background: black; border: 4px solid #555;
             position: relative; overflow: hidden;
         }
 
-        /* 하단 예정 리스트 */
         .next-flights {
             background: black; height: 20%; padding: 10px 40px;
             font-size: 30px; display: flex; flex-direction: column; justify-content: center;
         }
         .flight-row { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 8px 0; }
 
-        /* 하단 흐르는 자막 */
         .ticker {
             background: white; color: black; height: 10%;
             display: flex; align-items: center; font-size: 28px; font-weight: bold;
@@ -75,23 +69,22 @@
 
     <div class="main-info">
         <div class="status-box">
-            <div id="status-text">수하물 처리중</div>
+            <div id="status-text">연결 대기중...</div>
             <div class="flight-details">
-                <span id="origin-city">JEJU</span>
+                <span id="origin-city">---</span>
                 <span class="airline-logo">KOREAN AIR</span>
-                <span id="flight-num">KE 1250</span>
+                <span id="flight-num">---</span>
             </div>
         </div>
         <div class="cctv-container">
             <iframe id="cctv-frame" width="100%" height="100%" 
-                    src="https://www.youtube.com/embed/live_stream?channel=유튜브채널ID" 
-                    frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
     </div>
 
     <div class="next-flights">
         <div class="flight-row">
-            <span>BUSAN</span> <span>KE 1118</span> <span id="sub-status" style="color: #aaa;">Landed</span>
+            <span>BUSAN</span> <span>KE 1118</span> <span style="color: #aaa;">Landed</span>
         </div>
         <div class="flight-row">
             <span>JEJU</span> <span>KE 1258</span> <span></span>
@@ -99,39 +92,62 @@
     </div>
 
     <div class="ticker">
-        <div class="ticker-text" id="announcement">
-            안내말씀 드리겠습니다. 대한항공 1250편 수하물은 현재 1번 벨트에서 처리 중입니다. 수하물이 바뀌지 않도록 주의하시기 바랍니다.
-        </div>
+        <div class="ticker-text" id="announcement">데이터를 불러오는 중입니다...</div>
     </div>
 </div>
 
-<script>
-    // 1. 다국어 전환 로직
-    const statusText = document.getElementById('status-text');
-    const languages = [
-        { ko: "수하물 처리중", en: "Now Loading" },
-        { ko: "수하물 대기", en: "Waiting" } // 상황에 따라 변경 가능
-    ];
-    
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // [중요] 본인의 Firebase 설정값을 여기에 복사해서 넣으세요
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'baggage_system');
+
+    let statusKO = "연결중";
+    let statusEN = "Connecting";
     let currentLang = 'ko';
-    let currentStatusIdx = 0; // 현재 '처리중' 상태
 
-    function toggleLanguage() {
-        statusText.style.opacity = 0; // 페이드 아웃 효과
-        setTimeout(() => {
-            if (currentLang === 'ko') {
-                statusText.innerText = languages[currentStatusIdx].en;
-                currentLang = 'en';
-            } else {
-                statusText.innerText = languages[currentStatusIdx].ko;
-                currentLang = 'ko';
+    // 실시간 데이터 수신
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById('flight-num').innerText = data.flight_no || "---";
+            document.getElementById('origin-city').innerText = data.origin || "---";
+            document.getElementById('belt-num').innerText = data.belt_no || "1";
+            document.getElementById('announcement').innerText = data.marquee || "";
+            
+            if (data.youtube_id) {
+                document.getElementById('cctv-frame').src = `https://www.youtube.com/embed/${data.youtube_id}?autoplay=1&mute=1`;
             }
-            statusText.style.opacity = 1; // 페이드 인
+
+            statusKO = data.status_ko || "준비중";
+            statusEN = data.status_en || "Ready";
+            document.getElementById('status-text').innerText = (currentLang === 'ko') ? statusKO : statusEN;
+        }
+    });
+
+    // 5초마다 한/영 전환
+    setInterval(() => {
+        const el = document.getElementById('status-text');
+        el.style.opacity = 0;
+        setTimeout(() => {
+            currentLang = (currentLang === 'ko') ? 'en' : 'ko';
+            el.innerText = (currentLang === 'ko') ? statusKO : statusEN;
+            el.style.opacity = 1;
         }, 500);
-    }
-
-    setInterval(toggleLanguage, 5000); // 5초마다 언어 변경
+    }, 5000);
 </script>
-
 </body>
 </html>
