@@ -64,15 +64,15 @@
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     // [중요] display.html과 동일한 Firebase 설정값을 넣으세요
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyAyuJDE755VS_kebUr7U9LAP34XVEM4qpM",
+  authDomain: "baggage-claim-system.firebaseapp.com",
+  databaseURL: "https://baggage-claim-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "baggage-claim-system",
+  storageBucket: "baggage-claim-system.firebasestorage.app",
+  messagingSenderId: "512539951611",
+  appId: "1:512539951611:web:5a36dbdaf27c2618334b5e",
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
