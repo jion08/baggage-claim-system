@@ -28,7 +28,18 @@
         .status-box { display: flex; flex-direction: column; justify-content: center; width: 50%; }
         #status-text { font-size: 75px; font-weight: bold; margin-bottom: 10px; transition: opacity 0.5s; min-height: 110px; }
         .flight-details { font-size: 45px; display: flex; align-items: center; gap: 25px; }
-        .airline-logo { background: white; color: #003399; padding: 5px 15px; font-weight: bold; border-radius: 4px; }
+        
+        /* 로고 박스 스타일 */
+        .airline-logo { 
+            background: white; 
+            padding: 5px 15px; 
+            border-radius: 4px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            min-width: 150px;
+            height: 60px;
+        }
 
         .cctv-container {
             width: 45%; height: 100%; background: black; border: 4px solid #555;
@@ -73,9 +84,8 @@
             <div class="flight-details">
                 <span id="origin-city">---</span>
                 <span class="airline-logo">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Korean_Air_Logo.svg/1280px-Korean_Air_Logo.svg.png" 
-         alt="KOREAN AIR" style="height: 30px; vertical-align: middle;">
-</span>
+                    <img id="view-logo" src="" alt="Airline Logo" style="height: 40px; vertical-align: middle;">
+                </span>
                 <span id="flight-num">---</span>
             </div>
         </div>
@@ -103,16 +113,15 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // [중요] 본인의 Firebase 설정값을 여기에 복사해서 넣으세요
-const firebaseConfig = {
-  apiKey: "AIzaSyAyuJDE755VS_kebUr7U9LAP34XVEM4qpM",
-  authDomain: "baggage-claim-system.firebaseapp.com",
-  databaseURL: "https://baggage-claim-system-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "baggage-claim-system",
-  storageBucket: "baggage-claim-system.firebasestorage.app",
-  messagingSenderId: "512539951611",
-  appId: "1:512539951611:web:5a36dbdaf27c2618334b5e"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAyuJDE755VS_kebUr7U9LAP34XVEM4qpM",
+        authDomain: "baggage-claim-system.firebaseapp.com",
+        databaseURL: "https://baggage-claim-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "baggage-claim-system",
+        storageBucket: "baggage-claim-system.firebasestorage.app",
+        messagingSenderId: "512539951611",
+        appId: "1:512539951611:web:5a36dbdaf27c2618334b5e"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -130,6 +139,11 @@ const firebaseConfig = {
             document.getElementById('origin-city').innerText = data.origin || "---";
             document.getElementById('belt-num').innerText = data.belt_no || "1";
             document.getElementById('announcement').innerText = data.marquee || "";
+            
+            // [추가됨] 항공사 로고 업데이트
+            if (data.airline_url) {
+                document.getElementById('view-logo').src = data.airline_url;
+            }
             
             if (data.youtube_id) {
                 document.getElementById('cctv-frame').src = `https://www.youtube.com/embed/${data.youtube_id}?autoplay=1&mute=1`;
