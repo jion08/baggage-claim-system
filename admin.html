@@ -12,7 +12,7 @@
         h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; color: #333; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input { 
+        input, select { 
             width: 100%; padding: 12px; border: 1px solid #ddd; 
             border-radius: 6px; box-sizing: border-box; font-size: 16px;
         }
@@ -28,6 +28,18 @@
 
 <div class="admin-container">
     <h2>수하물 전광판 원격 제어</h2>
+    
+    <div class="form-group">
+        <label>항공사 선택 (Airline)</label>
+        <select id="airline_logo">
+            <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Korean_Air_Logo.svg/1280px-Korean_Air_Logo.svg.png">대한항공 (Korean Air)</option>
+            <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Asiana_Airlines_logo_2006.svg/1280px-Asiana_Airlines_logo_2006.svg.png">아시아나 항공 (Asiana)</option>
+            <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Jeju_Air_logo.svg/1280px-Jeju_Air_logo.svg.png">제주항공 (Jeju Air)</option>
+            <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Jin_Air_logo.svg/1280px-Jin_Air_logo.svg.png">진에어 (Jin Air)</option>
+            <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/T%27way_Air_logo.svg/1280px-T%27way_Air_logo.svg.png">티웨이 항공 (T'way)</option>
+        </select>
+    </div>
+
     <div class="form-group">
         <label>출발지 (Origin)</label>
         <input type="text" id="origin" value="JEJU">
@@ -63,21 +75,21 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // [중요] display.html과 동일한 Firebase 설정값을 넣으세요
-const firebaseConfig = {
-  apiKey: "AIzaSyAyuJDE755VS_kebUr7U9LAP34XVEM4qpM",
-  authDomain: "baggage-claim-system.firebaseapp.com",
-  databaseURL: "https://baggage-claim-system-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "baggage-claim-system",
-  storageBucket: "baggage-claim-system.firebasestorage.app",
-  messagingSenderId: "512539951611",
-  appId: "1:512539951611:web:5a36dbdaf27c2618334b5e",
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAyuJDE755VS_kebUr7U9LAP34XVEM4qpM",
+        authDomain: "baggage-claim-system.firebaseapp.com",
+        databaseURL: "https://baggage-claim-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "baggage-claim-system",
+        storageBucket: "baggage-claim-system.firebasestorage.app",
+        messagingSenderId: "512539951611",
+        appId: "1:512539951611:web:5a36dbdaf27c2618334b5e",
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
     document.getElementById('update-btn').onclick = function() {
+        // 모든 입력값과 선택된 로고 주소를 객체로 만듭니다.
         const data = {
             origin: document.getElementById('origin').value,
             flight_no: document.getElementById('flight_no').value,
@@ -85,7 +97,9 @@ const firebaseConfig = {
             status_ko: document.getElementById('status_ko').value,
             status_en: document.getElementById('status_en').value,
             youtube_id: document.getElementById('youtube_id').value,
-            marquee: document.getElementById('marquee').value
+            marquee: document.getElementById('marquee').value,
+            // [추가됨] 드롭다운에서 선택한 이미지 주소 저장
+            airline_url: document.getElementById('airline_logo').value
         };
 
         set(ref(db, 'baggage_system'), data)
